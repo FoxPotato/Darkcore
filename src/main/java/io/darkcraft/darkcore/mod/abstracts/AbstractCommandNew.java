@@ -74,6 +74,11 @@ public abstract class AbstractCommandNew extends AbstractCommand
 			s = strs[i];
 			if(s.startsWith("\""))
 			{
+				if(s.endsWith("\""))
+				{
+					strList.add(s.substring(1, s.length()-1));
+					continue;
+				}
 				String n = s.substring(1);
 				boolean f = false;
 				for(int j = i+1;j<strs.length; j++)
@@ -110,8 +115,13 @@ public abstract class AbstractCommandNew extends AbstractCommand
 				for(String alias : aliases)
 					if(possibleSubName.equalsIgnoreCase(alias))
 					{
-						if(com.commandBody(sen, totalCommand + " " + alias, nextList))
-							return true;
+						if(com.canCommandSenderUseCommand(sen))
+						{
+							if(com.commandBody(sen, totalCommand + " " + alias, nextList))
+								return true;
+							else
+								continue comLoop;
+						}
 						else
 							continue comLoop;
 					}
@@ -162,19 +172,23 @@ public abstract class AbstractCommandNew extends AbstractCommand
 			return getPlayerList(args[args.length-1]);
 		if(subCommands.length != 0)
 		{
-			for(AbstractCommandNew acn : subCommands)
-				for(Object o : acn.getCommandAliases())
-				{
-					if(!(o instanceof String)) continue;
-					if(((String)o).equalsIgnoreCase(args[0]))
+			if(args.length > 0)
+			{
+				for(AbstractCommandNew acn : subCommands)
+					for(Object o : acn.getCommandAliases())
 					{
-						String[] subArgs = new String[args.length-1];
-						for(int i = 1; i < args.length; i++)
-							subArgs[i-1]=args[i];
-						return acn.addTabCompletionOptions(sen, subArgs);
+						if(!(o instanceof String)) continue;
+						if(((String)o).equalsIgnoreCase(args[0]))
+						{
+							String[] subArgs = new String[args.length-1];
+							for(int i = 1; i < args.length; i++)
+								subArgs[i-1]=args[i];
+							return acn.addTabCompletionOptions(sen, subArgs);
+						}
 					}
-				}
-			return match(args[0],allSubArgs);
+				return match(args[0],allSubArgs);
+			}
+			return allSubArgs;
 		}
 		return emptyStringList;
 	}

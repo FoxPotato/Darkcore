@@ -39,13 +39,19 @@ public class PacketHandler
 		p.payload().discardReadBytes();
 		DataPacket dp = new DataPacket(p.payload());
 		NBTTagCompound nbt = dp.getNBT();
-		if (handlers.containsKey(discriminator)) handlers.get(discriminator).handleData(nbt);
+		if (handlers.containsKey(discriminator))
+			handlers.get(discriminator).handleData(nbt);
+		else
+			System.err.println("Packet with unknown discriminator " + discriminator + " received!");
 	}
 
 	public boolean registerHandler(int discriminator, IDataPacketHandler handler)
 	{
 		if (handlers.containsKey(discriminator))
-			throw new RuntimeException("Unable to register packet handler with discriminator " + discriminator + ":" + handler.toString());
+		{
+			IDataPacketHandler old = handlers.get(discriminator);
+			throw new RuntimeException("Unable to register packet handler with discriminator " + discriminator + ":" + handler + ":" + old);
+		}
 		handlers.put(discriminator, handler);
 		return true;
 	}

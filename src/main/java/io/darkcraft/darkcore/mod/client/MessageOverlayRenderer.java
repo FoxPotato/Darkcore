@@ -15,6 +15,7 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.StatCollector;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 
@@ -38,7 +39,7 @@ public class MessageOverlayRenderer extends Gui
 
 		public Message(String message, ResourceLocation icon, int s, long arr, UVStore uv)
 		{
-			m = message;
+			m = StatCollector.translateToLocal(message);
 			rl = icon;
 			secs = s;
 			arrivalTime = arr;
@@ -105,7 +106,7 @@ public class MessageOverlayRenderer extends Gui
 	{
 		List<String> lines;
 		int h = 1;
-		float scale = 0.7f;
+		float scale = 0.6875f;
 		int actualWidth =  MathHelper.floor((w - mh) / scale);
 		if(m.rl != null)
 		{
@@ -120,7 +121,8 @@ public class MessageOverlayRenderer extends Gui
 			Tessellator tess = Tessellator.instance;
 			tess.startDrawingQuads();
 			RenderHelper.bindTexture(m.rl);
-			face(Tessellator.instance,th,th,mh*2,mh*2,m.uv.u,m.uv.v,m.uv.U,m.uv.V);
+			RenderHelper.uiFace(th, th, mh*2, mh*2, 1, m.uv, false);
+			//face(Tessellator.instance,th,th,mh*2,mh*2,m.uv.u,m.uv.v,m.uv.U,m.uv.V);
 			tess.draw();
 		}
 		{

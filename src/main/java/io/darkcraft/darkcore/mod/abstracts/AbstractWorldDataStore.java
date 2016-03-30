@@ -3,6 +3,7 @@ package io.darkcraft.darkcore.mod.abstracts;
 import io.darkcraft.darkcore.mod.DarkcoreMod;
 import io.darkcraft.darkcore.mod.handlers.packets.WorldDataStoreHandler;
 import io.darkcraft.darkcore.mod.helpers.MathHelper;
+import io.darkcraft.darkcore.mod.helpers.ServerHelper;
 import io.darkcraft.darkcore.mod.helpers.WorldHelper;
 import io.darkcraft.darkcore.mod.network.DataPacket;
 import net.minecraft.nbt.NBTTagCompound;
@@ -75,6 +76,7 @@ public abstract class AbstractWorldDataStore extends WorldSavedData
 
 	public void sendUpdate()
 	{
+		if(ServerHelper.isClient()) return;
 		NBTTagCompound nbt = new NBTTagCompound();
 		nbt.setInteger("AWDSdim", getDimension());
 		nbt.setString("AWDSname", getName());
