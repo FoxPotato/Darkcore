@@ -39,7 +39,16 @@ public class MessageOverlayRenderer extends Gui
 
 		public Message(String message, ResourceLocation icon, int s, long arr, UVStore uv)
 		{
-			m = StatCollector.translateToLocal(message);
+			if((message == null) || message.isEmpty())
+				m = "";
+			else
+			{
+				String[] split = message.split(" ");
+				String x = "";
+				for(String str : split)
+					x += StatCollector.translateToLocal(str) + " ";
+				m = x.trim();
+			}
 			rl = icon;
 			secs = s;
 			arrivalTime = arr;
@@ -145,6 +154,8 @@ public class MessageOverlayRenderer extends Gui
 		synchronized(messageList)
 		{
 			GL11.glPushMatrix();
+			GL11.glEnable(GL11.GL_BLEND);
+			GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 			for(Message m : getMessages())
 			{
 				GL11.glTranslated(0, renderMessage(m), 0);

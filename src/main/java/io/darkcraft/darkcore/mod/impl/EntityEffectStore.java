@@ -1,13 +1,9 @@
 package io.darkcraft.darkcore.mod.impl;
 
-import io.darkcraft.darkcore.mod.DarkcoreMod;
+import io.darkcraft.darkcore.mod.abstracts.AbstractEntityDataStore;
 import io.darkcraft.darkcore.mod.abstracts.effects.AbstractEffect;
 import io.darkcraft.darkcore.mod.handlers.EffectHandler;
-import io.darkcraft.darkcore.mod.handlers.packets.EffectsPacketHandler;
-import io.darkcraft.darkcore.mod.helpers.ServerHelper;
-import io.darkcraft.darkcore.mod.network.DataPacket;
 
-import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,25 +11,17 @@ import java.util.Map.Entry;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
-import net.minecraftforge.common.IExtendedEntityProperties;
 
-public class EntityEffectStore implements IExtendedEntityProperties
+public class EntityEffectStore extends AbstractEntityDataStore
 {
+	public static final String disc = "dcEff";
 	private HashMap<String,AbstractEffect> effects = new HashMap<String,AbstractEffect>();
-	private final WeakReference<EntityLivingBase> entity;
-	private boolean updateQueued = true;
 
 	public EntityEffectStore(EntityLivingBase ent)
 	{
-		entity = new WeakReference(ent);
-	}
-
-	public EntityLivingBase getEntity()
-	{
-		return entity.get();
+		super(ent, disc);
 	}
 
 	public void tick()
@@ -51,11 +39,6 @@ public class EntityEffectStore implements IExtendedEntityProperties
 				eff.effectRemoved();
 				iter.remove();
 			}
-		}
-		if(updateQueued)
-		{
-			sendUpdate();
-			updateQueued = false;
 		}
 	}
 
@@ -85,14 +68,14 @@ public class EntityEffectStore implements IExtendedEntityProperties
 		effect.effectAdded();
 		if(shouldBeWatched())
 			EffectHandler.addWatchedStore(this);
-		sendUpdate();
+		queueUpdate();
 	}
 
 	public void remove(String id)
 	{
 		AbstractEffect eff = effects.remove(id);
 		if(eff != null) eff.effectRemoved();
-		sendUpdate();
+		queueUpdate();
 	}
 
 	public Collection<AbstractEffect> getEffects()
@@ -100,26 +83,19 @@ public class EntityEffectStore implements IExtendedEntityProperties
 		return effects.values();
 	}
 
-	private void sendUpdate()
+	@Override
+	public void init(Entity entity, World world)
 	{
-		if(ServerHelper.isClient()) return;
-		if((getEntity() == null) || getEntity().isDead) return;
-		if(!(getEntity() instanceof EntityPlayerMP)) return;
-		EntityPlayerMP pl = (EntityPlayerMP) getEntity();
-		NBTTagCompound nbt = new NBTTagCompound();
-		saveNBTData(nbt);
-		nbt.setString("dcEff", "plOnly");
-		DataPacket dp = new DataPacket(nbt,EffectsPacketHandler.effPacketDisc);
-		DarkcoreMod.networkChannel.sendTo(dp, pl);
-	}
-
-	public void queueUpdate()
-	{
-		updateQueued = true;
 	}
 
 	@Override
-	public void saveNBTData(NBTTagCompound nbt)
+	public void writeToNBT(NBTTagCompound nbt){}
+
+	@Override
+	public void readFromNBT(NBTTagCompound nbt){}
+
+	@Override
+	public void writeTransmittable(NBTTagCompound nbt)
 	{
 		int i = 0;
 		for(AbstractEffect eff : effects.values())
@@ -132,7 +108,7 @@ public class EntityEffectStore implements IExtendedEntityProperties
 	}
 
 	@Override
-	public void loadNBTData(NBTTagCompound nbt)
+	public void readTransmittable(NBTTagCompound nbt)
 	{
 		if((getEntity() == null) || getEntity().isDead) return;
 		effects.clear();
@@ -152,8 +128,9 @@ public class EntityEffectStore implements IExtendedEntityProperties
 	}
 
 	@Override
-	public void init(Entity entity, World world)
+	public boolean notifyArea()
 	{
+		return true;
 	}
 
 }
