@@ -28,7 +28,7 @@ public abstract class AbstractObjRenderer extends AbstractBlockRenderer
 
 		Tessellator tessellator = Tessellator.instance;
 
-		if(handleLighting())
+		if(handleLighting() && (w != null))
 		{
 			float brightness = w.getBlockLightValue(x, y, z);
 			int l = w.getLightBrightnessForSkyBlocks(x, y, z, 0);
@@ -49,4 +49,11 @@ public abstract class AbstractObjRenderer extends AbstractBlockRenderer
 	}
 
 	public void renderNormal(Tessellator tess, TileEntity te, int x, int y, int z){}
+
+	@Override
+	protected void handleItemRenderType(ItemRenderType type)
+	{
+		GL11.glScaled(0.75, 0.75, 0.75);
+		super.handleItemRenderType(type);
+	}
 }

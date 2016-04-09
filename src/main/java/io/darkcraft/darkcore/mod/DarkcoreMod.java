@@ -9,10 +9,12 @@ import io.darkcraft.darkcore.mod.config.ConfigHandlerFactory;
 import io.darkcraft.darkcore.mod.handlers.ChunkLoadingHandler;
 import io.darkcraft.darkcore.mod.handlers.CommandHandler;
 import io.darkcraft.darkcore.mod.handlers.EffectHandler;
+import io.darkcraft.darkcore.mod.handlers.RecipeHandler;
 import io.darkcraft.darkcore.mod.handlers.WeatherWatchingHandler;
 import io.darkcraft.darkcore.mod.handlers.packets.EntityDataStorePacketHandler;
 import io.darkcraft.darkcore.mod.handlers.packets.EntityPacketHandler;
 import io.darkcraft.darkcore.mod.handlers.packets.MessagePacketHandler;
+import io.darkcraft.darkcore.mod.handlers.packets.PreciseRightClickHandler;
 import io.darkcraft.darkcore.mod.handlers.packets.SoundPacketHandler;
 import io.darkcraft.darkcore.mod.handlers.packets.WorldDataStoreHandler;
 import io.darkcraft.darkcore.mod.helpers.PlayerHelper;
@@ -38,6 +40,7 @@ import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
@@ -51,7 +54,7 @@ import cpw.mods.fml.common.network.NetworkRegistry;
  * @author dark
  *
  */
-@Mod(modid = "darkcore", version = "0.4")
+@Mod(modid = "darkcore", version = "0.41")
 public class DarkcoreMod implements IConfigHandlerMod
 {
 	@SidedProxy(clientSide = "io.darkcraft.darkcore.mod.proxy.ClientProxy", serverSide = "io.darkcraft.darkcore.mod.proxy.CommonProxy")
@@ -109,6 +112,7 @@ public class DarkcoreMod implements IConfigHandlerMod
 		packetHandler.registerHandler(EntityPacketHandler.disc, new EntityPacketHandler());
 		packetHandler.registerHandler(MessagePacketHandler.disc, new MessagePacketHandler());
 		packetHandler.registerHandler(EntityDataStorePacketHandler.disc, new EntityDataStorePacketHandler());
+		packetHandler.registerHandler(PreciseRightClickHandler.disc, new PreciseRightClickHandler());
 		DarkcoreMod.packetHandler.registerHandler(WorldDataStoreHandler.disc, new WorldDataStoreHandler());
 		uniqueSword = new UniqueSwordItem().register();
 	}
@@ -128,6 +132,12 @@ public class DarkcoreMod implements IConfigHandlerMod
 		MinecraftForge.EVENT_BUS.register(eh);
 		FMLCommonHandler.instance().bus().register(eh);
 		proxy.init();
+	}
+
+	@EventHandler
+	public void postInit(FMLPostInitializationEvent ev)
+	{
+		RecipeHandler.registerAllRecipes();
 	}
 
 	@EventHandler

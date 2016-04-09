@@ -3,13 +3,17 @@ package io.darkcraft.darkcore.mod.abstracts;
 import io.darkcraft.darkcore.mod.DarkcoreMod;
 import io.darkcraft.darkcore.mod.config.ConfigFile;
 import io.darkcraft.darkcore.mod.datastore.SimpleCoordStore;
+import io.darkcraft.darkcore.mod.handlers.RecipeHandler;
+import io.darkcraft.darkcore.mod.handlers.packets.PreciseRightClickHandler;
 import io.darkcraft.darkcore.mod.helpers.BlockIterator;
 import io.darkcraft.darkcore.mod.helpers.MathHelper;
+import io.darkcraft.darkcore.mod.helpers.ServerHelper;
 import io.darkcraft.darkcore.mod.impl.DefaultItemBlock;
 import io.darkcraft.darkcore.mod.interfaces.IActivatablePrecise;
 import io.darkcraft.darkcore.mod.interfaces.IBlockIteratorCondition;
 import io.darkcraft.darkcore.mod.interfaces.IColorableBlock;
 import io.darkcraft.darkcore.mod.interfaces.IExplodable;
+import io.darkcraft.darkcore.mod.interfaces.IRecipeContainer;
 import io.darkcraft.darkcore.mod.multiblock.BlockState;
 
 import java.util.List;
@@ -47,7 +51,7 @@ import cpw.mods.fml.relauncher.SideOnly;
  * @author dark
  *
  */
-public abstract class AbstractBlock extends Block
+public abstract class AbstractBlock extends Block implements IRecipeContainer
 {
 	private IIcon				iconBuffer			= null;
 	private String				unlocalizedFragment	= "";
@@ -87,6 +91,7 @@ public abstract class AbstractBlock extends Block
 		opaque = isOpaqueCube();
         lightOpacity = isOpaqueCube() ? 255 : 0;
         canBlockGrass = !blockMaterial.getCanBlockGrass();
+        RecipeHandler.addRecipeContainer(this);
 	}
 
 	/**
@@ -472,7 +477,12 @@ public abstract class AbstractBlock extends Block
 		if((b instanceof SimulacrumBlock) && (((SimulacrumBlock)b).sim != this)) return false;
 		if (pl == null) return false;
 		if (this instanceof IActivatablePrecise)
-			if(((IActivatablePrecise)this).activate(pl, s, x+Math.max(i,0.9999f), y+Math.max(j,0.9999f), z+Math.max(k,0.9999f))) return true;
+		{
+			if(ServerHelper.isClient())
+				PreciseRightClickHandler.handle(w, x, y, z, pl, s, i, j, k);
+			//((IActivatablePrecise)this).activate(pl, s, x+Math.max(i,0.9999f), y+Math.max(j,0.9999f), z+Math.max(k,0.9999f));
+			return true;
+		}
 		if (this instanceof IColorableBlock)
 		{
 			IBlockIteratorCondition ibic = ((IColorableBlock)this).getColoringIterator(new SimpleCoordStore(w,x,y,z));
@@ -526,6 +536,7 @@ public abstract class AbstractBlock extends Block
 
 	public abstract void initData();
 
+	@Override
 	public abstract void initRecipes();
 
 	public void addInfo(int metadata, NBTTagCompound nbt, List infoList){};
